@@ -1,0 +1,55 @@
+@Select(NameState) action$: Observable<type>;
+action$ |async
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+@Select(TodoState.getSelectedTodo) selectedTodo: Observable<Todo>;
+this.formSubscription.add(
+      this.selectedTodo.subscribe(todo => {
+        if (todo) {
+          this.todoForm.patchValue({
+            id: todo.id,
+            userId: todo.userId,
+            title: todo.title
+          });
+          this.editTodo = true;
+        } else {
+          this.editTodo = false;
+        }
+      })
+);
+
+
+@Selector()
+static getTodoList(state: TodoStateModel) {
+        return state.todos;
+}
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+@Action(GetTodos)
+getTodos({getState, setState}: StateContext<TodoStateModel>) {
+        return this.todoService.fetchTodos().pipe(tap((result) => {
+            const state = getState();
+            setState({
+                ...state,
+                todos: result,
+            });
+        }),
+            catchError((err) => {
+                const state = getState();
+                setState({
+                    ...state,
+                    error: err,
+                });
+                console.log(err)
+                throw err;
+        })
+        );
+}
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+import {Todo} from '../models/Todo';
+export class AddTodo {
+    static readonly type = '[Todo] Add';
+    constructor(public payload: Todo) {
+    }
+}
